@@ -17,18 +17,24 @@
 import argparse
 import logging
 import sys
+import os
 
 from google.datacatalog_connectors.apache_atlas import sync
 
 
 class ApacheAtlas2DataCatalogCli:
-    __DATACATALOG_LOCATION_ID = 'us-central1'
-
+    
     @classmethod
     def run(cls, argv):
         cls.__setup_logging()
 
         args = cls._parse_args(argv)
+
+        # Inject Service Account
+        if args.service_account_path:
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS']\
+                = args.service_account_path
+        
         args.func(args)
 
     @classmethod
@@ -82,8 +88,14 @@ class ApacheAtlas2DataCatalogCli:
 
     @classmethod
     def __add_common_args(cls, sync_sub_parser):
+        sync_sub_parser.add_argument('--service-account-path',
+                                     help='Service Account Path',
+                                     required=True)
         sync_sub_parser.add_argument('--datacatalog-project-id',
                                      help='Google Cloud Project ID',
+                                     required=True)
+        sync_sub_parser.add_argument('--datacatalog-location-id',
+                                     help='Google Cloud Location',
                                      required=True)
         sync_sub_parser.add_argument('--atlas-host',
                                      help='Apache Atlas Host',
@@ -109,7 +121,7 @@ class ApacheAtlas2DataCatalogCli:
 
         sync.MetadataSynchronizer(
             datacatalog_project_id=args.datacatalog_project_id,
-            datacatalog_location_id=cls.__DATACATALOG_LOCATION_ID,
+            datacatalog_location_id=args.datacatalog_location_id,
             atlas_connection_args={
                 'host': args.atlas_host,
                 'port': args.atlas_port,
@@ -125,7 +137,7 @@ class ApacheAtlas2DataCatalogCli:
 
         sync.MetadataEventSynchronizer(
             datacatalog_project_id=args.datacatalog_project_id,
-            datacatalog_location_id=cls.__DATACATALOG_LOCATION_ID,
+            datacatalog_location_id=args.datacatalog_location_id,
             atlas_connection_args={
                 'host': args.atlas_host,
                 'port': args.atlas_port,
