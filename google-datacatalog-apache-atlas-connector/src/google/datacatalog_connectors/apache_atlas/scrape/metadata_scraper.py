@@ -39,6 +39,7 @@ class MetadataScraper:
         self._log_single_object_scrape_result(admin_metrics)
 
         self._log_scrape_start('Scraping typedefs...')
+        print(self._apache_atlas_facade.get_typedefs())
         for typedef in self._apache_atlas_facade.get_typedefs():
             self._scrape_classification_types(classifications_dict, typedef)
 
